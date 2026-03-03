@@ -1,7 +1,11 @@
+// app.js (completo)
+// Requiere en index.html: #q, #style, #category, #color, #hex, #grid, #cardTpl, #count
+
 const qEl = document.getElementById("q");
 const styleEl = document.getElementById("style");
 const categoryEl = document.getElementById("category");
-const colorEl = document.getElementById("color");      // NUEVO
+const colorEl = document.getElementById("color");
+const hexEl = document.getElementById("hex");
 const grid = document.getElementById("grid");
 const tpl = document.getElementById("cardTpl");
 const countEl = document.getElementById("count");
@@ -10,15 +14,32 @@ let all = [];
 let styles = [];
 let categoriesByStyle = new Map();
 
-function uniq(arr) { return Array.from(new Set(arr)); }
+// Cache de SVG para no refetchear lo mismo al cambiar filtros
+const svgCache = new Map(); // path -> svg text
+
+function uniq(arr) {
+  return Array.from(new Set(arr));
+}
 
 function absoluteUrl(relPath) {
   return new URL(relPath, window.location.href).toString();
 }
 
 function applyLineColor(hex) {
-  // Solo afecta a previews lineales si el CSS usa esta variable
   document.documentElement.style.setProperty("--icon-color", hex);
+}
+
+function normalizeHex(v) {
+  let x = (v || "").trim().toUpperCase();
+  if (!x.startsWith("#")) x = "#" + x;
+  if (!/^#[0-9A-F]{6}$/.test(x)) return null;
+  return x;
+}
+
+function setColor(hex) {
+  applyLineColor(hex);
+  if (colorEl) colorEl.value = hex;
+  if (hexEl) hexEl.value = hex;
 }
 
 async function loadIndex() {
@@ -26,18 +47,19 @@ async function loadIndex() {
   const data = await res.json();
   all = data.icons;
 
-  styles = uniq(all.map(i => i.style)).sort();
+  styles = uniq(all.map((i) => i.style)).sort();
   categoriesByStyle = new Map();
+
   for (const s of styles) {
     categoriesByStyle.set(
       s,
-      uniq(all.filter(i => i.style === s).map(i => i.category)).sort()
+      uniq(all.filter((i) => i.style === s).map((i) => i.category)).sort()
     );
   }
 
   styleEl.innerHTML = [
     `<option value="(todos)">(todos)</option>`,
-    ...styles.map(s => `<option value="${s}">${s}</option>`)
+    ...styles.map((s) => `<option value="${s}">${s}</option>`),
   ].join("");
 
   // Default: Line si existe
@@ -45,21 +67,23 @@ async function loadIndex() {
 
   syncCategories();
 
-  // Default color visible
-  applyLineColor(colorEl?.value || "#EAF2FF");
+  // Default color visible y sincronizado
+  setColor((colorEl?.value || "#EAF2FF").toUpperCase());
 
   render();
 }
 
 function syncCategories() {
   const s = styleEl.value;
-  const cats = (s === "(todos)")
-    ? uniq(all.map(i => i.category)).sort()
-    : (categoriesByStyle.get(s) || []);
+
+  const cats =
+    s === "(todos)"
+      ? uniq(all.map((i) => i.category)).sort()
+      : categoriesByStyle.get(s) || [];
 
   categoryEl.innerHTML = [
     `<option value="(todas)">(todas)</option>`,
-    ...cats.map(c => `<option value="${c}">${c}</option>`)
+    ...cats.map((c) => `<option value="${c}">${c}</option>`),
   ].join("");
 }
 
@@ -75,6 +99,9 @@ async function render() {
   const s = styleEl.value;
   const c = categoryEl.value;
 
+  // Marca estilo en body para CSS (Line vs Duocolor/Gestalt)
+  document.body.dataset.style = s;
+
   // No renderices TODO sin intención
   if (!q && s === "(todos)" && c === "(todas)") {
     grid.innerHTML = `<div class="empty">Escribe algo o filtra por estilo/categoría.</div>`;
@@ -82,10 +109,7 @@ async function render() {
     return;
   }
 
-  // Marca el estilo actual en el body para CSS (Line vs Duocolor/Gestalt)
-  document.body.dataset.style = s;
-
-  const filtered = all.filter(i => matches(i, q, s, c));
+  const filtered = all.filter((i) => matches(i, q, s, c));
   countEl.textContent = `${filtered.length} / ${all.length}`;
 
   grid.innerHTML = "";
@@ -97,6 +121,7 @@ async function render() {
 
   for (const icon of slice) {
     const node = tpl.content.cloneNode(true);
+
     const preview = node.querySelector(".preview");
     const name = node.querySelector(".name");
     const sub = node.querySelector(".sub");
@@ -108,13 +133,24 @@ async function render() {
     sub.textContent = `${icon.style} • ${icon.category}`;
     openA.href = icon.path;
 
-    fetch(icon.path)
-      .then(r => r.text())
-      .then(svg => { preview.innerHTML = svg; })
-      .catch(() => { preview.textContent = "⚠️"; });
+    // Preview (cacheado)
+    if (svgCache.has(icon.path)) {
+      preview.innerHTML = svgCache.get(icon.path);
+    } else {
+      fetch(icon.path)
+        .then((r) => r.text())
+        .then((svg) => {
+          svgCache.set(icon.path, svg);
+          preview.innerHTML = svg;
+        })
+        .catch(() => {
+          preview.textContent = "⚠️";
+        });
+    }
 
     copySvgBtn.addEventListener("click", async () => {
-      const svg = await (await fetch(icon.path)).text();
+      const svg = svgCache.get(icon.path) ?? (await (await fetch(icon.path)).text());
+      svgCache.set(icon.path, svg);
       await navigator.clipboard.writeText(svg);
       copySvgBtn.textContent = "Copiado";
       setTimeout(() => (copySvgBtn.textContent = "Copiar SVG"), 800);
@@ -139,13 +175,37 @@ async function render() {
   }
 }
 
+// Eventos
 qEl.addEventListener("input", render);
-styleEl.addEventListener("change", () => { syncCategories(); render(); });
+
+styleEl.addEventListener("change", () => {
+  syncCategories();
+  render();
+});
+
 categoryEl.addEventListener("change", render);
 
-// Color picker (solo cambia variable CSS)
+// Color picker: sincroniza hex y CSS var
 if (colorEl) {
-  colorEl.addEventListener("input", () => applyLineColor(colorEl.value));
+  colorEl.addEventListener("input", () => {
+    setColor(colorEl.value.toUpperCase());
+  });
+}
+
+// HEX input: valida al salir (blur) o Enter
+if (hexEl) {
+  hexEl.addEventListener("blur", () => {
+    const hex = normalizeHex(hexEl.value);
+    if (hex) setColor(hex);
+    else setColor((colorEl?.value || "#EAF2FF").toUpperCase());
+  });
+
+  hexEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      hexEl.blur();
+    }
+  });
 }
 
 loadIndex();

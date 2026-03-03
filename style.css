@@ -142,3 +142,21 @@ button:hover, a.open:hover{
 
 .empty{ padding: 16px; opacity: .85; }
 .note{ padding: 12px 16px 24px; opacity: .8; }
+
+/* Mejor jerarquía + hover moderno */
+.card { transition: transform .18s ease, background .18s ease, border-color .18s ease; }
+.card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.06); }
+
+button, a.open { transition: background .18s ease, transform .18s ease, border-color .18s ease; }
+button:active, a.open:active { transform: translateY(1px); }
+
+#hex{
+  width: 86px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+#hex::placeholder{ color: rgba(231,238,252,.55); }
