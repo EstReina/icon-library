@@ -1,0 +1,39 @@
+:root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+body { margin: 0; background: #0b1220; color: #e7eefc; }
+.top {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 12px; padding: 12px;
+  background: rgba(11,18,32,.92); backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+input, select {
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #e7eefc; outline: none;
+}
+#count { margin-left: auto; opacity: .8; align-self: center; white-space: nowrap; }
+.grid {
+  padding: 16px;
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.card {
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  border-radius: 16px; overflow: hidden;
+}
+.preview { height: 120px; display: grid; place-items: center; background: rgba(255,255,255,.03); }
+.preview svg { width: 48px; height: 48px; }
+.meta { padding: 10px 12px; }
+.name { font-weight: 650; }
+.sub { opacity: .75; font-size: 12px; margin-top: 4px; }
+.actions { display: flex; gap: 8px; padding: 10px 12px 12px; flex-wrap: wrap; }
+button, a.open {
+  cursor: pointer; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #e7eefc; padding: 8px 10px;
+  text-decoration: none; font-size: 13px;
+}
+button:hover, a.open:hover { background: rgba(255,255,255,.10); }

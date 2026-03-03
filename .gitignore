@@ -1,0 +1,16 @@
+# Mac basura
+.DS_Store
+**/.DS_Store
+
+# Windows basura
+Thumbs.db
+desktop.ini
+
+# Node
+node_modules/
+
+# Logs
+*.log
+
+# OS temp
+*.tmp
