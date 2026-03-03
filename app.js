@@ -57,7 +57,7 @@ async function render() {
   grid.innerHTML = "";
 
   // Evita congelar el navegador: fuerza búsqueda/filtrado si es demasiado
-  const limit = 800;
+  const limit = 120;
   const slice = filtered.slice(0, limit);
 
   const frag = document.createDocumentFragment();
@@ -111,3 +111,6 @@ styleEl.addEventListener("change", () => { syncCategories(); render(); });
 categoryEl.addEventListener("change", render);
 
 loadIndex();
+styleEl.value = "Line"; // o el que más uses
+syncCategories();
+render();
