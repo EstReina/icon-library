@@ -36,7 +36,7 @@ for (const style of styles) {
         name,         // alphabet-a
         style,        // Line
         category,     // Alphabet
-        path: `../icons/${rel}` // desde /site
+        path: `icons/${rel}` // desde /site
       });
     }
   }
