@@ -37,3 +37,32 @@ button, a.open {
   text-decoration: none; font-size: 13px;
 }
 button:hover, a.open:hover { background: rgba(255,255,255,.10); }
+
+/* Preview con mejor contraste */
+.preview {
+  height: 120px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(120px 80px at 50% 40%, rgba(255,255,255,.10), rgba(255,255,255,.03));
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+/* Icono más grande y con color consistente */
+.preview svg {
+  width: 72px;
+  height: 72px;
+  color: rgba(255,255,255,.92);
+  opacity: 1;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,.35));
+}
+
+/* Fuerza stroke/fill visibles (sin destruir duocolor) */
+.preview svg [stroke] { stroke: currentColor; stroke-opacity: 1; }
+.preview svg [fill]:not([fill="none"]) { fill-opacity: 1; }
+
+/* Texto más legible */
+.name { font-weight: 650; font-size: 14px; letter-spacing: .2px; }
+.sub { opacity: .8; font-size: 11px; margin-top: 4px; }
+
+/* Estado vacío */
+.empty { padding: 16px; opacity: .85; }

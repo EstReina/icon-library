@@ -51,6 +51,14 @@ async function render() {
   const s = styleEl.value;
   const c = categoryEl.value;
 
+    if (!q && s === "(todos)" && c === "(todas)") {
+    grid.innerHTML = `<div class="empty">
+      Escribe algo o filtra por estilo/categoría.
+    </div>`;
+    countEl.textContent = `0 / ${all.length}`;
+    return;
+  }
+
   const filtered = all.filter(i => matches(i, q, s, c));
   countEl.textContent = `${filtered.length} / ${all.length}`;
 
@@ -110,7 +118,25 @@ qEl.addEventListener("input", render);
 styleEl.addEventListener("change", () => { syncCategories(); render(); });
 categoryEl.addEventListener("change", render);
 
-loadIndex();
-styleEl.value = "Line"; // o el que más uses
-syncCategories();
-render();
+async function loadIndex() {
+  const res = await fetch("./icons.json", { cache: "no-store" });
+  const data = await res.json();
+  all = data.icons;
+
+  styles = uniq(all.map(i => i.style)).sort();
+  categoriesByStyle = new Map();
+  for (const s of styles) {
+    categoriesByStyle.set(s, uniq(all.filter(i => i.style === s).map(i => i.category)).sort());
+  }
+
+  styleEl.innerHTML = [
+    `<option value="(todos)">(todos)</option>`,
+    ...styles.map(s => `<option value="${s}">${s}</option>`)
+  ].join("");
+
+  // Default inteligente (solo si existe)
+  if (styles.includes("Line")) styleEl.value = "Line";
+
+  syncCategories();
+  render();
+}
