@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const ICONS_DIR = path.resolve("icons");
-const OUT_FILE = path.resolve("site/icons.json");
+const OUT_FILE = path.resolve("icons.json");
 
 function listDirs(dir) {
   return fs.readdirSync(dir, { withFileTypes: true })
